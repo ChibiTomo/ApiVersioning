@@ -31,7 +31,8 @@ public class ApiVersionCondition {
     }
 
     public boolean doSupportLast() {
-        return VersionHelper.match(versions.last(), supportedVersions.last(), false);
+        return !versions.isEmpty() && !supportedVersions.isEmpty()
+                && VersionHelper.match(versions.last(), supportedVersions.last(), false);
     }
 
     private SortedSet<String> getRealVersions(SortedSet<String> versions, SortedSet<String> supportedVersions) {

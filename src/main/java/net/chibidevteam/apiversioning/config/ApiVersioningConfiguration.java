@@ -7,7 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
-@PropertySource(value = "classpath:/apiversioning.properties", ignoreResourceNotFound = true)
+@PropertySource(value = { "classpath:/defaultapiversioning.properties",
+        "classpath:/apiversioning.properties" }, ignoreResourceNotFound = true)
 @Component
 public class ApiVersioningConfiguration {
 
@@ -19,10 +20,7 @@ public class ApiVersioningConfiguration {
     private static final String             REGEX_END_CHAR              = "$";
     private static final String             REGEX_CHAR_LIST_OPEN        = "[";
     private static final String             REGEX_CHAR_LIST_CLOSE       = "]";
-    /**
-     * Pattern which validate the version format
-     */
-    private static final String             VERSION_REGEX               = "^(\\d+)(?:\\.(\\d+))?(?:\\.(\\d+))?(.*)$";
+
     public static final String              SUPERIOR_VERSION_PREFIXES   = ">";
     public static final String              INFERIOR_VERSION_PREFIXES   = "<";
     public static final String              COMPATIBLE_VERSION_PREFIXES = "\\^";
@@ -31,6 +29,7 @@ public class ApiVersioningConfiguration {
 
     private static String                   versionPathPrefix;
 
+    private static String                   basePath;
     private static String                   pathVarname;
 
     private static String[]                 supportedVersions;
@@ -44,13 +43,15 @@ public class ApiVersioningConfiguration {
     private static String                   excludeVersionRegex;
     private static Pattern                  versionPattern;
 
-    public ApiVersioningConfiguration(@Value("${api_versioning.api_version_path_prefix}") String versionPathPrefix,
-            @Value("${api_versioning.path_varname}") String pathVarname,
-            @Value("${api_versioning.supported_versions}") String[] supportedVersions,
-            @Value("${api_versioning.version_regex:" + VERSION_REGEX + "}") String versionRegex) {
+    public ApiVersioningConfiguration(@Value("${net.chibidevteam.apiversioning.path.prefix}") String versionPathPrefix,
+            @Value("${net.chibidevteam.apiversioning.path.varname}") String pathVarname,
+            @Value("${net.chibidevteam.apiversioning.versions.supported}") String[] supportedVersions,
+            @Value("${net.chibidevteam.apiversioning.versions.regex}") String versionRegex,
+            @Value("${net.chibidevteam.apiversioning.path.base}") String basePath) {
         ApiVersioningConfiguration.versionPathPrefix = versionPathPrefix;
         ApiVersioningConfiguration.pathVarname = pathVarname;
         ApiVersioningConfiguration.supportedVersions = supportedVersions;
+        ApiVersioningConfiguration.basePath = basePath;
 
         String vr = versionRegex;
         if (!vr.startsWith(REGEX_BEGIN_CHAR)) {
@@ -118,6 +119,14 @@ public class ApiVersioningConfiguration {
 
     public static Pattern getVersionPattern() {
         return versionPattern;
+    }
+
+    public static String getBasePath() {
+        return basePath;
+    }
+
+    public static String getApiPath() {
+        return getBasePath() + "/" + "{" + getPathVarname() + "}";
     }
 
 }

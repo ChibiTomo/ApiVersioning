@@ -15,7 +15,6 @@ import javax.validation.Payload;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidApiVersion {
 
-    // SupportedVersions value() default SupportedVersions.ALL;
     String[] value() default {};
 
     String message() default "{net.chibidevteam.apiversioning.ValidApiVersion.notsupported}";
