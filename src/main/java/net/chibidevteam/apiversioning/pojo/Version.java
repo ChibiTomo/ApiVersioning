@@ -1,4 +1,4 @@
-package net.chibidevteam.apiversioning.model;
+package net.chibidevteam.apiversioning.pojo;
 
 import java.util.ArrayList;
 import java.util.List;

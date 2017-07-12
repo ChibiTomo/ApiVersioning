@@ -7,7 +7,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 
-public class ClassHelper {
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+public final class ClassHelper {
+
+    /** Logger that is available to subclasses */
+    private static final Log LOGGER = LogFactory.getLog(ClassHelper.class);
 
     private ClassHelper() {
     }
@@ -45,6 +51,10 @@ public class ClassHelper {
                 map.put(field.getName(), field.get(obj));
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 map.put(field.getName(), null);
+                if (LOGGER.isWarnEnabled()) {
+                    LOGGER.warn("Cannot retrieve value of field '" + field.getName() + "' from class '"
+                            + clazz.getName() + "' of '" + obj + "'", e);
+                }
             }
         }
         return map;

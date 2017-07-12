@@ -9,18 +9,41 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import net.chibidevteam.apiversioning.config.ApiVersioningConfiguration;
-import net.chibidevteam.apiversioning.model.Version;
+import net.chibidevteam.apiversioning.pojo.Version;
 
 @Service
-public class VersionHelper {
+public final class VersionHelper {
 
     private VersionHelper() {
     }
 
+    /**
+     * Test if a version match an array of version representations. The version {@code toTest} should match at least one
+     * version representation from the {@code versions}.
+     * <ul>
+     * <li>1.7 match {^1.5, >2}</li>
+     * <li>1.7 match {<1.5, >1.7}</li>
+     * <li>1.7 match {!1.5, >1}</li>
+     * <li>1.7 does not match {<1.5, ^1}</li>
+     * <li>1.7 does not match {^1.5, !1.7}</li>
+     * </ul>
+     * 
+     * @param toTest
+     *            the version to test. <b>Should not be a compatibility representation.</b>
+     * @param versions
+     *            the reference version array.
+     * @param isTestFromPath
+     *            set it to true if the tested version is from the path.
+     * @return {@literal true} if {@code toTest} match at least one version representation from {@code versions}.</br>
+     *         {@literal false} if {@code toTest} does not match at least one exclude version from {@code versions}.</br>
+     *         {@literal false} otherwise.
+     * @throws
+     *             NullPointerException
+     *             if {@code versions} is null
+     */
     public static boolean match(String toTest, String[] versions, boolean isTestFromPath) {
         boolean result = false;
-        for (int i = 0; i < versions.length; ++i) {
-            String v = versions[i];
+        for (String v : versions) {
             boolean matched = match(toTest, v, isTestFromPath);
             if (isExcludeVersion(v) && !matched) {
                 return false;
@@ -46,7 +69,8 @@ public class VersionHelper {
      *            the reference version.
      * @param isTestFromPath
      *            set it to true if the tested version is from the path.
-     * @return
+     * @return {@literal true} if {@code toTest} match the version representation from {@code version}.</br>
+     *         {@literal false} otherwise.
      */
     public static boolean match(String toTest, String version, boolean isTestFromPath) {
         boolean isWrongPathVersion = isTestFromPath
@@ -85,7 +109,8 @@ public class VersionHelper {
     }
 
     /**
-     * Test if the passed string match the {@link Config}.VERSION_PATTERN
+     * Test if the passed string match the {@link ApiVersioningConfiguration}::getConfVersionRegex
+     * or {@link ApiVersioningConfiguration}::getPathVersionRegex
      * 
      * @param toTest
      * @return
@@ -93,6 +118,34 @@ public class VersionHelper {
     public static boolean isVersion(String toTest) {
         return toTest.matches(ApiVersioningConfiguration.getConfVersionRegex())
                 || toTest.matches(ApiVersioningConfiguration.getPathVersionRegex());
+    }
+
+    /**
+     * @param version
+     * @return
+     */
+    public static String simplify(String version) {
+        Version v = fromString(version);
+        Integer major = v.getMajor() == null ? 0 : v.getMajor();
+        Integer minor = v.getMinor() == null ? 0 : v.getMinor();
+        Integer patch = v.getPatch() == null ? 0 : v.getPatch();
+        List<String> others = v.getOthers();
+
+        StringBuilder sb = new StringBuilder();
+        if (!others.isEmpty()) {
+            sb.insert(0, StringUtils.join(v.getOthers(), ""));
+        }
+
+        if (sb.length() > 0 || patch != 0) {
+            sb.insert(0, patch);
+            sb.insert(0, '.');
+        }
+        if (sb.length() > 0 || minor != 0) {
+            sb.insert(0, minor);
+            sb.insert(0, '.');
+        }
+        sb.insert(0, major);
+        return sb.toString();
     }
 
     private static boolean isCompatible(String toTest, String version) {
@@ -175,29 +228,5 @@ public class VersionHelper {
             }
         }
         return result;
-    }
-
-    public static String simplify(String version) {
-        Version v = fromString(version);
-        Integer major = v.getMajor() == null ? 0 : v.getMajor();
-        Integer minor = v.getMinor() == null ? 0 : v.getMinor();
-        Integer patch = v.getPatch() == null ? 0 : v.getPatch();
-        List<String> others = v.getOthers();
-
-        StringBuilder sb = new StringBuilder();
-        if (!others.isEmpty()) {
-            sb.insert(0, StringUtils.join(v.getOthers(), ""));
-        }
-
-        if (sb.length() > 0 || patch != 0) {
-            sb.insert(0, patch);
-            sb.insert(0, '.');
-        }
-        if (sb.length() > 0 || minor != 0) {
-            sb.insert(0, minor);
-            sb.insert(0, '.');
-        }
-        sb.insert(0, major);
-        return sb.toString();
     }
 }
