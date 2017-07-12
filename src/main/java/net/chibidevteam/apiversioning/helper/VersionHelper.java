@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Service;
 
 import net.chibidevteam.apiversioning.config.ApiVersioningConfiguration;
@@ -13,6 +15,8 @@ import net.chibidevteam.apiversioning.pojo.Version;
 
 @Service
 public final class VersionHelper {
+
+    private static final Log LOGGER = LogFactory.getLog(VersionHelper.class);;
 
     private VersionHelper() {
     }
@@ -75,6 +79,10 @@ public final class VersionHelper {
     public static boolean match(String toTest, String version, boolean isTestFromPath) {
         boolean isWrongPathVersion = isTestFromPath
                 && !toTest.matches(ApiVersioningConfiguration.getPathVersionRegex());
+        LOGGER.trace("isTestFromPath: " + isTestFromPath);
+        LOGGER.trace("isWrongPathVersion: " + isWrongPathVersion);
+        LOGGER.trace("isVersion('" + toTest + "'): " + isVersion(toTest));
+        LOGGER.trace("isVersion('" + version + "'): " + isVersion(version));
         if (isWrongPathVersion || !isVersion(toTest) || !isVersion(version)) {
             return false;
         }
@@ -116,6 +124,8 @@ public final class VersionHelper {
      * @return
      */
     public static boolean isVersion(String toTest) {
+        LOGGER.trace("Testing '" + toTest + "' with '" + ApiVersioningConfiguration.getConfVersionRegex() + "' and '"
+                + ApiVersioningConfiguration.getPathVersionRegex() + "'");
         return toTest.matches(ApiVersioningConfiguration.getConfVersionRegex())
                 || toTest.matches(ApiVersioningConfiguration.getPathVersionRegex());
     }

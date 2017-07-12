@@ -3,14 +3,20 @@ package net.chibidevteam.apiversioning.config;
 import java.util.Comparator;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
+import net.chibidevteam.apiversioning.exceptions.NoSupportedVersionException;
+
 @PropertySource(value = { "classpath:/defaultapiversioning.properties",
-        "classpath:/apiversioning.properties" }, ignoreResourceNotFound = true)
+        "classpath:/" + ApiVersioningConfiguration.PROPERTY_FILE }, ignoreResourceNotFound = true)
 @Component
 public class ApiVersioningConfiguration {
+
+    public static final String              PROPERTY_FILE               = "apiversioning.properties";
 
     public static final Comparator<Integer> INTEGER_COMPARATOR          = Comparator.nullsFirst(Integer::compareTo);
 
@@ -31,6 +37,7 @@ public class ApiVersioningConfiguration {
 
     private static String                   basePath;
     private static String                   pathVarname;
+    private static String                   apiPath;
 
     private static String[]                 supportedVersions;
 
@@ -47,17 +54,23 @@ public class ApiVersioningConfiguration {
             @Value("${net.chibidevteam.apiversioning.path.varname}") String pathVarname,
             @Value("${net.chibidevteam.apiversioning.versions.supported}") String[] supportedVersions,
             @Value("${net.chibidevteam.apiversioning.versions.regex}") String versionRegex,
-            @Value("${net.chibidevteam.apiversioning.path.base}") String basePath) {
+            @Value("${net.chibidevteam.apiversioning.path.base}") String basePath,
+            @Value("${net.chibidevteam.apiversioning.path.api}") String apiPath) throws NoSupportedVersionException {
         ApiVersioningConfiguration.versionPathPrefix = versionPathPrefix;
         ApiVersioningConfiguration.pathVarname = pathVarname;
         ApiVersioningConfiguration.supportedVersions = supportedVersions;
         ApiVersioningConfiguration.basePath = basePath;
+        ApiVersioningConfiguration.apiPath = apiPath;
+
+        if (ArrayUtils.isEmpty(ApiVersioningConfiguration.supportedVersions)) {
+            throw new NoSupportedVersionException();
+        }
 
         String vr = versionRegex;
         if (!vr.startsWith(REGEX_BEGIN_CHAR)) {
             vr = REGEX_BEGIN_CHAR + vr;
         }
-        if (vr.endsWith(REGEX_END_CHAR)) {
+        if (!vr.endsWith(REGEX_END_CHAR)) {
             vr += REGEX_END_CHAR;
         }
         ApiVersioningConfiguration.confVersionRegex = vr.replace(REGEX_BEGIN_CHAR, REGEX_BEGIN_CHAR + ".?");
@@ -126,7 +139,15 @@ public class ApiVersioningConfiguration {
     }
 
     public static String getApiPath() {
-        return getBasePath() + "/" + "{" + getPathVarname() + "}";
+        return !StringUtils.isEmpty(apiPath) ? apiPath : getBasePath() + "/" + getVersionPathVariable();
+    }
+
+    public static String getVersionPathVariableEscaped() {
+        return getVersionPathVariable().replaceAll("\\{", "\\\\{").replaceAll("\\}", "\\\\}");
+    }
+
+    public static String getVersionPathVariable() {
+        return "{" + getPathVarname() + "}";
     }
 
 }
