@@ -13,10 +13,10 @@ import net.chibidevteam.apiversioning.annotation.ValidApiVersion;
 @Validated
 public class ForwardController {
 
-    @Value("${api_versioning.path_varname}")
+    @Value("${net.chibidevteam.apiversioning.path.varname}")
     private final String apiPathVarname = "";
 
-    @RequestMapping("${api_versioning.api_path}/**")
+    @RequestMapping("${net.chibidevteam.apiversioning.path.api}/**")
     @ResponseBody
     public String forward(@ValidApiVersion @PathVariable(apiPathVarname) String apiVersion) {
         return "hello " + apiVersion;

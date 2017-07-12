@@ -171,7 +171,7 @@ public class RequestMappingCombiner {
         Set<String> result = new TreeSet<>();
         Set<String> handledVersions = apiVersionCondition.getVersions();
 
-        String needle = "\\{" + ApiVersioningConfiguration.getPathVarname() + "\\}";
+        String needle = ApiVersioningConfiguration.getVersionPathVariableEscaped();
         for (String path : paths) {
             for (String version : handledVersions) {
                 StringBuilder sb = new StringBuilder(ApiVersioningConfiguration.getVersionPathPrefix());
@@ -179,8 +179,7 @@ public class RequestMappingCombiner {
                 result.add(path.replaceAll(needle, sb.toString()));
             }
             if (apiVersionCondition.doSupportLast()) {
-                String v = path.replaceAll(needle, "");
-                result.add(v.replaceAll("//", "/"));
+                result.add(getLastVersionPath(path));
             }
         }
 
@@ -188,6 +187,12 @@ public class RequestMappingCombiner {
             logger.trace("Conditionaly formed paths are: " + StringUtils.join(result, ", "));
         }
         return result.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
+    }
+
+    private String getLastVersionPath(String path) {
+        String needle = ApiVersioningConfiguration.getVersionPathVariableEscaped();
+        String v = path.replaceAll(needle, "");
+        return v.replaceAll("//", "/");
     }
 
     private void buildPath(String[] array) {
@@ -225,11 +230,16 @@ public class RequestMappingCombiner {
         if (p1.contains(p2)) {
             return p1;
         }
-        if (p2.contains(p1)) {
+        if (p2.contains(p1) || p1.equals(getLastVersionPath(p1))) {
+            return p2;
+        }
+        if (p2.equals(getLastVersionPath(p2))) {
+            return p1;
+        }
+        if (p1.equals(getLastVersionPath(p1))) {
             return p2;
         }
         return removeTrailingSlash(p1) + prependSlash(p2);
-
     }
 
     private void buildMethod(RequestMethod[] newMethods) {
