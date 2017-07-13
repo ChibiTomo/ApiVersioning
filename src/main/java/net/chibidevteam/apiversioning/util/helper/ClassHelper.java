@@ -1,4 +1,4 @@
-package net.chibidevteam.apiversioning.helper;
+package net.chibidevteam.apiversioning.util.helper;
 
 import static net.chibidevteam.apiversioning.config.ApiVersioningConfiguration.PRIME_NBR;
 

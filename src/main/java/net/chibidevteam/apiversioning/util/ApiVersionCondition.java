@@ -1,4 +1,4 @@
-package net.chibidevteam.apiversioning.annotation;
+package net.chibidevteam.apiversioning.util;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -10,7 +10,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.CollectionUtils;
 
-import net.chibidevteam.apiversioning.helper.VersionHelper;
+import net.chibidevteam.apiversioning.annotation.ApiVersion;
+import net.chibidevteam.apiversioning.util.helper.VersionHelper;
 
 /**
  * This class translate {@link ApiVersion} annotation to a {@link Set} of real supported versions.

@@ -1,4 +1,4 @@
-package net.chibidevteam.apiversioning.annotation;
+package net.chibidevteam.apiversioning.util;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -16,6 +16,7 @@ import org.springframework.web.servlet.mvc.condition.RequestConditionHolder;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMethodMappingNamingStrategy;
 
+import net.chibidevteam.apiversioning.annotation.ApiRequestMapping;
 import net.chibidevteam.apiversioning.config.ApiVersioningConfiguration;
 
 /**

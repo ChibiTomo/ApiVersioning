@@ -17,9 +17,9 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 
 import net.chibidevteam.apiversioning.annotation.ApiRequestMapping;
 import net.chibidevteam.apiversioning.annotation.ApiVersion;
-import net.chibidevteam.apiversioning.annotation.ApiVersionCondition;
-import net.chibidevteam.apiversioning.annotation.RequestMappingCombiner;
 import net.chibidevteam.apiversioning.config.ApiVersioningConfiguration;
+import net.chibidevteam.apiversioning.util.ApiVersionCondition;
+import net.chibidevteam.apiversioning.util.RequestMappingCombiner;
 
 public class ApiVersionRequestMappingHandlerMapping extends RequestMappingHandlerMapping {
 
