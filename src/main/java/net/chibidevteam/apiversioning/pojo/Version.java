@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import net.chibidevteam.apiversioning.helper.ClassHelper;
+import net.chibidevteam.apiversioning.util.helper.ClassHelper;
 
 /**
  * @author Yannis THOMIAS

@@ -4,7 +4,6 @@ import java.util.Comparator;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
@@ -139,7 +138,7 @@ public class ApiVersioningConfiguration {
     }
 
     public static String getApiPath() {
-        return !StringUtils.isEmpty(apiPath) ? apiPath : getBasePath() + "/" + getVersionPathVariable();
+        return apiPath;
     }
 
     public static String getVersionPathVariableEscaped() {

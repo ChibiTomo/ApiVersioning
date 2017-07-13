@@ -8,7 +8,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import net.chibidevteam.apiversioning.mapping.ApiVersionRequestMappingHandlerMapping;
 
 @Configuration
-public class WebMvcConfig extends WebMvcConfigurationSupport {
+public class WebMvcConfigSupport extends WebMvcConfigurationSupport {
 
     @Override
     @Bean

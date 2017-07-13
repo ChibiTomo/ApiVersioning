@@ -5,7 +5,8 @@ import javax.validation.ConstraintValidatorContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import net.chibidevteam.apiversioning.helper.VersionHelper;
+import net.chibidevteam.apiversioning.config.ApiVersioningConfiguration;
+import net.chibidevteam.apiversioning.util.helper.VersionHelper;
 
 public class ApiVersionValidator implements ConstraintValidator<ValidApiVersion, String> {
 
@@ -16,7 +17,7 @@ public class ApiVersionValidator implements ConstraintValidator<ValidApiVersion,
 
     @Override
     public void initialize(ValidApiVersion annotation) {
-        allowedVersions = annotation.value();
+        allowedVersions = ApiVersioningConfiguration.getSupportedVersions();
     }
 
     @Override
