@@ -16,7 +16,7 @@ import net.chibidevteam.apiversioning.pojo.Version;
 @Service
 public final class VersionHelper {
 
-    private static final Log LOGGER = LogFactory.getLog(VersionHelper.class);;
+    private static final Log LOGGER = LogFactory.getLog(VersionHelper.class);
 
     private VersionHelper() {
     }

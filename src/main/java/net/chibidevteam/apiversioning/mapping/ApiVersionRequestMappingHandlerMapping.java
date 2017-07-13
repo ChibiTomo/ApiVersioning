@@ -10,6 +10,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.condition.HeadersRequestCondition;
 import org.springframework.web.servlet.mvc.condition.ParamsRequestCondition;
+import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
 import org.springframework.web.servlet.mvc.condition.RequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo.BuilderConfiguration;
@@ -19,14 +20,26 @@ import net.chibidevteam.apiversioning.annotation.ApiRequestMapping;
 import net.chibidevteam.apiversioning.annotation.ApiVersion;
 import net.chibidevteam.apiversioning.config.ApiVersioningConfiguration;
 import net.chibidevteam.apiversioning.util.ApiVersionCondition;
-import net.chibidevteam.apiversioning.util.RequestMappingCombiner;
+import net.chibidevteam.apiversioning.util.RequestMappingWrapper;
+import net.chibidevteam.apiversioning.util.helper.ApiPathHelper;
 
 public class ApiVersionRequestMappingHandlerMapping extends RequestMappingHandlerMapping {
 
     @Override
     protected RequestMappingInfo getMappingForMethod(Method method, Class<?> handlerType) {
-        RequestMappingInfo info = createMappingForMethod(method, handlerType, null);
 
+        RequestMappingInfo info = createMappingForMethod(method, handlerType);
+        if (info == null) {
+            return null;
+        }
+
+        ApiVersionCondition apiVersionCondition = createApiVersionCondition(method, handlerType);
+
+        boolean useApiPath = doUseApiPath(method, handlerType);
+        return getRequestMappingInfo(apiVersionCondition, info, useApiPath);
+    }
+
+    private ApiVersionCondition createApiVersionCondition(Method method, Class<?> handlerType) {
         ApiVersionCondition methodApiVersionCondition = getApiVersionCondition(method);
         if (logger.isTraceEnabled()) {
             logger.trace(handlerType.getName() + "::" + method.getName() + " accepts following versions: "
@@ -46,62 +59,78 @@ public class ApiVersionRequestMappingHandlerMapping extends RequestMappingHandle
             // handlerTypeApiVersionCondition is always null here
             apiVersionCondition = methodApiVersionCondition;
         }
-
-        if (logger.isTraceEnabled()) {
-            logger.trace(handlerType.getName() + "::" + method.getName() + " restricted by " + handlerType.getName()
-                    + " accepts following versions: " + apiVersionCondition);
-        }
-
-        return getRequestMappingInfo(apiVersionCondition, info, method, handlerType);
+        return apiVersionCondition;
     }
 
-    private RequestMappingInfo createMappingForMethod(Method method, Class<?> handlerType,
-            ApiVersionCondition apiVersionCondition) {
-        RequestMappingInfo info = createRequestMappingInfo(method, apiVersionCondition);
+    private boolean doUseApiPath(Method method, Class<?> handlerType) {
+        ApiRequestMapping apiRequestMappingM = AnnotatedElementUtils.findMergedAnnotation(method,
+                ApiRequestMapping.class);
+        ApiRequestMapping apiRequestMappingT = AnnotatedElementUtils.findMergedAnnotation(handlerType,
+                ApiRequestMapping.class);
+        return apiRequestMappingM != null || apiRequestMappingT != null;
+    }
 
+    private RequestMappingInfo createMappingForMethod(Method method, Class<?> handlerType) {
+        RequestMappingInfo info = createRequestMappingInfoFromMapper(method);
         if (info != null) {
-            if (logger.isTraceEnabled()) {
-                logger.trace(
-                        "Method " + handlerType.getName() + "::" + method.getName() + " can be mapped to: " + info);
-            }
-            RequestMappingInfo typeInfo = createRequestMappingInfo(handlerType, apiVersionCondition);
+            RequestMappingInfo typeInfo = createRequestMappingInfoFromMapper(handlerType);
             if (typeInfo != null) {
-                if (logger.isTraceEnabled()) {
-                    logger.trace("Type " + handlerType.getName() + " constrains mapping to: " + info);
-                }
-                info = combine(typeInfo, info);
-                if (logger.isTraceEnabled()) {
-                    logger.trace(
-                            "Combined " + handlerType.getName() + "::" + method.getName() + " mapping to: " + info);
-                }
+                info = typeInfo.combine(info);
             }
-        } else {
-            logger.trace("Method " + handlerType.getName() + "::" + method.getName() + " will not be mapped");
         }
         return info;
     }
 
-    private RequestMappingInfo combine(RequestMappingInfo typeInfo, RequestMappingInfo methodInfo) {
-        if (typeInfo == null && methodInfo == null) {
-            return null;
+    private RequestMappingInfo createRequestMappingInfoFromMapper(AnnotatedElement element) {
+        RequestCondition<?> condition = element instanceof Class ? getCustomTypeCondition((Class<?>) element)
+                : getCustomMethodCondition((Method) element);
+
+        ApiRequestMapping apiRequestMapping = AnnotatedElementUtils.findMergedAnnotation(element,
+                ApiRequestMapping.class);
+        if (apiRequestMapping != null) {
+            return createRequestMappingInfo(new RequestMappingWrapper(apiRequestMapping), condition);
         }
-        if (logger.isTraceEnabled()) {
-            logger.trace("About to combine " + typeInfo + " and " + methodInfo);
+
+        RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(element, RequestMapping.class);
+        if (requestMapping != null) {
+            return createRequestMappingInfo(new RequestMappingWrapper(requestMapping), condition);
         }
-        return buildRequestMappingInfo(new RequestMappingCombiner(methodInfo, typeInfo), null, null);
+
+        return null;
+    }
+
+    private RequestMappingInfo createRequestMappingInfo(RequestMappingWrapper requestMapper,
+            RequestCondition<?> customCondition) {
+
+        return RequestMappingInfo.paths(resolveEmbeddedValuesInPatterns(requestMapper.getPaths()))
+                .methods(requestMapper.getMethods()).params(requestMapper.getParams())
+                .headers(requestMapper.getHeaders()).consumes(requestMapper.getConsumes())
+                .produces(requestMapper.getProduces()).mappingName(requestMapper.getName())
+                .customCondition(customCondition).options(getBuilderConfig()).build();
+    }
+
+    private BuilderConfiguration getBuilderConfig() {
+        BuilderConfiguration builderconfig = new RequestMappingInfo.BuilderConfiguration();
+        builderconfig.setUrlPathHelper(getUrlPathHelper());
+        builderconfig.setPathMatcher(getPathMatcher());
+        builderconfig.setSuffixPatternMatch(useSuffixPatternMatch());
+        builderconfig.setTrailingSlashMatch(useTrailingSlashMatch());
+        builderconfig.setRegisteredSuffixPatternMatch(useRegisteredSuffixPatternMatch());
+        builderconfig.setContentNegotiationManager(getContentNegotiationManager());
+        return builderconfig;
     }
 
     private RequestMappingInfo getRequestMappingInfo(ApiVersionCondition apiVersionCondition, RequestMappingInfo info,
-            Method method, Class<?> handlerType) {
+            boolean useApiPath) {
         RequestMappingInfo result = info;
         if (apiVersionCondition == null) {
             return result;
         }
-        // result = requestParamApiVersionInfo(apiVersionCondition).combine(info);
-        // result = requestHeaderApiVersionInfo(apiVersionCondition).combine(info);
+        // result = requestParamApiVersionInfo(apiVersionCondition, useApiPath).combine(info);
+        // result = requestHeaderApiVersionInfo(apiVersionCondition, useApiPath).combine(info);
 
-        // Do not combine for path, we recreate all.
-        result = createMappingForMethod(method, handlerType, apiVersionCondition);
+        // Do not combine for path.
+        result = requestPathApiVersionInfo(apiVersionCondition, useApiPath, true).combine(info);
         return result;
     }
 
@@ -128,65 +157,33 @@ public class ApiVersionRequestMappingHandlerMapping extends RequestMappingHandle
         return new ApiVersionCondition(values, ApiVersioningConfiguration.getSupportedVersions());
     }
 
-    private RequestMappingInfo requestParamApiVersionInfo(ApiVersionCondition apiVersionCondition) {
+    private RequestMappingInfo requestParamApiVersionInfo(ApiVersionCondition apiVersionCondition, boolean useApiPath) {
         return new RequestMappingInfo(null, null,
                 new ParamsRequestCondition(
                         Stream.of(apiVersionCondition.getVersions()).map(val -> "v=" + val).toArray(String[]::new)),
                 null, null, null, null);
     }
 
-    private RequestMappingInfo requestHeaderApiVersionInfo(ApiVersionCondition apiVersionCondition) {
+    private RequestMappingInfo requestHeaderApiVersionInfo(ApiVersionCondition apiVersionCondition,
+            boolean useApiPath) {
         return new RequestMappingInfo(null, null, null,
                 new HeadersRequestCondition(
                         Stream.of(apiVersionCondition.getVersions()).map(val -> "v=" + val).toArray(String[]::new)),
                 null, null, null);
     }
 
-    private RequestMappingInfo createRequestMappingInfo(AnnotatedElement element,
-            ApiVersionCondition apiVersionCondition) {
-        RequestMappingCombiner requestMapper = getRequestMapper(element);
-        RequestCondition<?> condition = element instanceof Class ? getCustomTypeCondition((Class<?>) element)
-                : getCustomMethodCondition((Method) element);
-        return requestMapper != null ? buildRequestMappingInfo(requestMapper, condition, apiVersionCondition) : null;
+    private RequestMappingInfo requestPathApiVersionInfo(ApiVersionCondition apiVersionCondition, boolean useApiPath,
+            boolean useVersionVar) {
+        PatternsRequestCondition patternCondition = getApiPatternCondition(apiVersionCondition, useApiPath,
+                useVersionVar);
+        return new RequestMappingInfo(patternCondition, null, null, null, null, null, null);
     }
 
-    private RequestMappingCombiner getRequestMapper(AnnotatedElement element) {
-        RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(element, RequestMapping.class);
-        ApiRequestMapping apiRequestMapping = AnnotatedElementUtils.findMergedAnnotation(element,
-                ApiRequestMapping.class);
-
-        if (logger.isTraceEnabled()) {
-            logger.info("Element has RequestMapping: " + requestMapping);
-            logger.info("Element has ApiRequestMapping: " + apiRequestMapping);
-        }
-
-        if (requestMapping == null && apiRequestMapping == null) {
+    private PatternsRequestCondition getApiPatternCondition(ApiVersionCondition apiVersionCondition, boolean useApiPath,
+            boolean useVersionVar) {
+        if (apiVersionCondition == null || !useApiPath) {
             return null;
         }
-        return new RequestMappingCombiner(apiRequestMapping, requestMapping);
-    }
-
-    private RequestMappingInfo buildRequestMappingInfo(RequestMappingCombiner requestMapper,
-            RequestCondition<?> customCondition, ApiVersionCondition apiVersionCondition) {
-
-        BuilderConfiguration builderconfig = new RequestMappingInfo.BuilderConfiguration();
-        builderconfig.setUrlPathHelper(getUrlPathHelper());
-        builderconfig.setPathMatcher(getPathMatcher());
-        builderconfig.setSuffixPatternMatch(useSuffixPatternMatch());
-        builderconfig.setTrailingSlashMatch(useTrailingSlashMatch());
-        builderconfig.setRegisteredSuffixPatternMatch(useRegisteredSuffixPatternMatch());
-        builderconfig.setContentNegotiationManager(getContentNegotiationManager());
-
-        String[] paths = requestMapper.getPaths(apiVersionCondition);
-
-        if (logger.isTraceEnabled()) {
-            logger.info("About to create RequestMappingInfo for paths: " + StringUtils.join(paths, ", "));
-        }
-        return RequestMappingInfo.paths(resolveEmbeddedValuesInPatterns(paths)).methods(requestMapper.getMethods())
-                .params(requestMapper.getParams()).headers(requestMapper.getHeaders())
-                .consumes(requestMapper.getConsumes()).produces(requestMapper.getProduces())
-                .mappingName(requestMapper.getName())
-                .customCondition(customCondition != null ? customCondition : requestMapper.getCondition())
-                .options(builderconfig).build();
+        return new PatternsRequestCondition(ApiPathHelper.getPaths(apiVersionCondition, useApiPath, useVersionVar));
     }
 }

@@ -14,7 +14,7 @@ import net.chibidevteam.apiversioning.annotation.ApiVersion;
 import net.chibidevteam.apiversioning.util.helper.VersionHelper;
 
 /**
- * This class translate {@link ApiVersion} annotation to a {@link Set} of real supported versions.
+ * This class translate {@link ApiVersion @ApiVersion} annotation to a {@link Set} of real supported versions.
  * 
  * @author Yannis THOMIAS
  */
