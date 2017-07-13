@@ -3,12 +3,15 @@ package net.chibidevteam.apiversioning.util.helper;
 import static net.chibidevteam.apiversioning.config.ApiVersioningConfiguration.INTEGER_COMPARATOR;
 
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import net.chibidevteam.apiversioning.config.ApiVersioningConfiguration;
 import net.chibidevteam.apiversioning.pojo.Version;
@@ -130,11 +133,45 @@ public final class VersionHelper {
                 || toTest.matches(ApiVersioningConfiguration.getPathVersionRegex());
     }
 
-    /**
-     * @param version
-     * @return
-     */
-    public static String simplify(String version) {
+    public static SortedSet<String> getRealVersions(SortedSet<String> versions, SortedSet<String> supportedVersions) {
+        if (CollectionUtils.isEmpty(supportedVersions)) {
+            LOGGER.trace("No supported version");
+            return new TreeSet<>();
+        }
+        if (CollectionUtils.isEmpty(versions)) {
+            LOGGER.trace("Support all versions");
+            return supportedVersions;
+        }
+        SortedSet<String> result = new TreeSet<>();
+        for (String sv : supportedVersions) {
+            boolean matchAllButCompatibility = true;
+            boolean hasCompatibility = false;
+            boolean matchAtLeastOneCompatibility = false;
+            boolean hasExact = false;
+            boolean matchAtLeastOneExact = false;
+            for (String v : versions) {
+                boolean match = VersionHelper.match(sv, v, false);
+                LOGGER.trace("Testing '" + sv + "' over '" + v + "' => " + (match ? "does match" : "does NOT match"));
+                if (isCompatibilityVersion(v)) {
+                    hasCompatibility = true;
+                    matchAtLeastOneCompatibility |= match;
+                } else if (isExactlyVersion(v)) {
+                    hasExact = true;
+                    matchAtLeastOneExact |= match;
+                } else {
+                    matchAllButCompatibility &= match;
+                }
+            }
+            boolean matchCompatibility = !hasCompatibility || (hasCompatibility && matchAtLeastOneCompatibility);
+            boolean matchExact = !hasExact || (hasExact && matchAtLeastOneExact);
+            if (matchAllButCompatibility && matchCompatibility && matchExact) {
+                result.add(VersionHelper.simplify(sv));
+            }
+        }
+        return result;
+    }
+
+    private static String simplify(String version) {
         Version v = fromString(version);
         Integer major = v.getMajor() == null ? 0 : v.getMajor();
         Integer minor = v.getMinor() == null ? 0 : v.getMinor();

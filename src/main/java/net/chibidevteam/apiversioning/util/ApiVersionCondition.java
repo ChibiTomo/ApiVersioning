@@ -8,7 +8,6 @@ import java.util.TreeSet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.util.CollectionUtils;
 
 import net.chibidevteam.apiversioning.annotation.ApiVersion;
 import net.chibidevteam.apiversioning.util.helper.VersionHelper;
@@ -31,7 +30,7 @@ public class ApiVersionCondition {
     }
 
     public ApiVersionCondition(SortedSet<String> versions, SortedSet<String> supportedVersions) {
-        SortedSet<String> newVersions = getRealVersions(versions, supportedVersions);
+        SortedSet<String> newVersions = VersionHelper.getRealVersions(versions, supportedVersions);
         this.versions.addAll(newVersions);
         this.supportedVersions.addAll(supportedVersions);
     }
@@ -39,28 +38,6 @@ public class ApiVersionCondition {
     public boolean doSupportLast() {
         return !versions.isEmpty() && !supportedVersions.isEmpty()
                 && VersionHelper.match(versions.last(), supportedVersions.last(), false);
-    }
-
-    private SortedSet<String> getRealVersions(SortedSet<String> versions, SortedSet<String> supportedVersions) {
-        if (CollectionUtils.isEmpty(supportedVersions)) {
-            logger.trace("No supported version");
-            return new TreeSet<>();
-        }
-        if (CollectionUtils.isEmpty(versions)) {
-            logger.trace("Support all versions");
-            return supportedVersions;
-        }
-        SortedSet<String> result = new TreeSet<>();
-        for (String sv : supportedVersions) {
-            for (String v : versions) {
-                logger.trace("Testing '" + sv + "' over '" + v + "' => "
-                        + (VersionHelper.match(sv, v, false) ? "does match" : "does NOT match"));
-                if (VersionHelper.match(sv, v, false)) {
-                    result.add(VersionHelper.simplify(sv));
-                }
-            }
-        }
-        return result;
     }
 
     public ApiVersionCondition restrictWith(ApiVersionCondition other) {
