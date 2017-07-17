@@ -7,6 +7,11 @@ You will be able to do versions through:
 - **Header**: [To be done](https://github.com/ChibiTomo/ApiVersioning/issues/1)
 - **Parameter**: [To be done](https://github.com/ChibiTomo/ApiVersioning/issues/2)
 
+Requirements
+------------
+
+This library works with Spring 4.3.9.
+
 Quick start
 -----------
 
