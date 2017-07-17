@@ -85,5 +85,5 @@ This will create the following endpoints:
 - `exampleV3` will be mapped to `/api/v3/example`
 - `getTest` will be mapped to `/api/example/test`, `/api/v1.7/example/test`, `/api/v1.8/example/test`, `/api/v2.5/example/test`, `/api/v3/example/test` and `/api/v3.5/example/test`
 
-Any request that match `/api/v0/**` will leads to a 404 HTTP error.
-Any request that match `/api/{apiVersion}/**` witf unsupported version, will leads to a 400 HTTP error.
+Any request that match `/api/v0/**`, as any non mapped endpoint, will leads to a 404 HTTP error.
+Any request that match `/api/{apiVersion}/**` with unsupported version, will leads to a 400 HTTP error.
