@@ -144,7 +144,7 @@ public final class VersionHelper {
         }
         SortedSet<String> result = new TreeSet<>();
         for (String sv : supportedVersions) {
-            boolean matchAllButCompatibility = true;
+            boolean matchAllButCompatibilityOrExact = true;
             boolean hasCompatibility = false;
             boolean matchAtLeastOneCompatibility = false;
             boolean hasExact = false;
@@ -159,12 +159,12 @@ public final class VersionHelper {
                     hasExact = true;
                     matchAtLeastOneExact |= match;
                 } else {
-                    matchAllButCompatibility &= match;
+                    matchAllButCompatibilityOrExact &= match;
                 }
             }
             boolean matchCompatibility = !hasCompatibility || (hasCompatibility && matchAtLeastOneCompatibility);
             boolean matchExact = !hasExact || (hasExact && matchAtLeastOneExact);
-            if (matchAllButCompatibility && matchCompatibility && matchExact) {
+            if (matchAllButCompatibilityOrExact && matchCompatibility && matchExact) {
                 result.add(VersionHelper.simplify(sv));
             }
         }
