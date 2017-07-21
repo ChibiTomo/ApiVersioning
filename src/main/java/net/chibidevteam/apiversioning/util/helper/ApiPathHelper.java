@@ -2,6 +2,8 @@ package net.chibidevteam.apiversioning.util.helper;
 
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -16,19 +18,18 @@ public class ApiPathHelper {
     private static String getApiPath(boolean useVersionVar) {
         String apiPath = ApiVersioningConfiguration.getApiPath();
 
-        boolean hasLeadingSlash = apiPath.startsWith("/");
-        boolean hasTrailingSlash = apiPath.endsWith("/");
+        boolean hadLeadingSlash = apiPath.startsWith("/");
+        boolean hadTrailingSlash = apiPath.endsWith("/");
 
         if (!useVersionVar) {
-            apiPath = apiPath.replaceAll(ApiVersioningConfiguration.getVersionPathVariableEscaped(), "")
-                    .replaceAll("/+", "/");
+            apiPath = removeVersionPathVariable(apiPath);
         }
-        if (hasLeadingSlash) {
+        if (hadLeadingSlash) {
             apiPath = prependSlash(apiPath);
         } else {
             apiPath = removeLeadingSlash(apiPath);
         }
-        if (hasTrailingSlash) {
+        if (hadTrailingSlash) {
             apiPath = appendSlash(apiPath);
         } else {
             apiPath = removeTrailingSlash(apiPath);
@@ -50,24 +51,33 @@ public class ApiPathHelper {
         Set<String> set = new TreeSet<>();
         Set<String> handledVersions = apiVersionCondition.getVersions();
 
-        String needle = ApiVersioningConfiguration.getVersionPathVariableEscaped();
         for (String path : result) {
             for (String version : handledVersions) {
                 StringBuilder sb = new StringBuilder(ApiVersioningConfiguration.getVersionPathPrefix());
                 sb.append(version);
-                set.add(path.replaceAll(needle, sb.toString()));
+                set.add(replaceVersionPathVariable(path, sb.toString()));
             }
             if (apiVersionCondition.doSupportLast()) {
-                set.add(getLastVersionPath(path));
+                set.add(removeVersionPathVariable(path));
             }
         }
         return set.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
     }
 
-    private static String getLastVersionPath(String path) {
-        String needle = ApiVersioningConfiguration.getVersionPathVariableEscaped();
-        String v = path.replaceAll(needle, "");
-        return v.replaceAll("/+", "/");
+    private static String removeVersionPathVariable(String path) {
+        return replaceVersionPathVariable(path, "");
+    }
+
+    private static String replaceVersionPathVariable(String path, String rplc) {
+        String needle = ApiVersioningConfiguration.getVersionPathVariable();
+        String needle2 = ApiVersioningConfiguration.getVersionPathVariableWithRegex();
+        String v = path.replaceAll(Pattern.quote(needle), Matcher.quoteReplacement(rplc))
+                .replaceAll(Pattern.quote(needle2), Matcher.quoteReplacement(rplc));
+        return removeDuplicatedSlash(v);
+    }
+
+    private static String removeDuplicatedSlash(String path) {
+        return path.replaceAll("/+", "/");
     }
 
     private static String removeTrailingSlash(String path) {

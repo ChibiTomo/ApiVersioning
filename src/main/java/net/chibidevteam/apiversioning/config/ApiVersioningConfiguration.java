@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import net.chibidevteam.apiversioning.exceptions.NoSupportedVersionException;
 
-@PropertySource(value = { "classpath:/defaultapiversioning.properties",
+@PropertySource(value = { "classpath:/default-apiversioning.properties",
         "classpath:/" + ApiVersioningConfiguration.PROPERTY_FILE }, ignoreResourceNotFound = true)
 @Component
 public class ApiVersioningConfiguration {
@@ -49,10 +49,14 @@ public class ApiVersioningConfiguration {
     private static String                   excludeVersionRegex;
     private static Pattern                  versionPattern;
 
+    private static String                   versionPathVariable;
+    private static String                   versionPathVariableWithRegex;
+
     public ApiVersioningConfiguration(@Value("${net.chibidevteam.apiversioning.path.prefix}") String versionPathPrefix,
             @Value("${net.chibidevteam.apiversioning.path.varname}") String pathVarname,
             @Value("${net.chibidevteam.apiversioning.versions.supported}") String[] supportedVersions,
             @Value("${net.chibidevteam.apiversioning.versions.regex}") String versionRegex,
+            @Value("${net.chibidevteam.apiversioning.versions.noCaptureRegex}") String noCaptureRegex,
             @Value("${net.chibidevteam.apiversioning.path.base}") String basePath,
             @Value("${net.chibidevteam.apiversioning.path.api}") String apiPath) throws NoSupportedVersionException {
         ApiVersioningConfiguration.versionPathPrefix = versionPathPrefix;
@@ -72,21 +76,30 @@ public class ApiVersioningConfiguration {
         if (!vr.endsWith(REGEX_END_CHAR)) {
             vr += REGEX_END_CHAR;
         }
-        ApiVersioningConfiguration.confVersionRegex = vr.replace(REGEX_BEGIN_CHAR, REGEX_BEGIN_CHAR + ".?");
-        ApiVersioningConfiguration.pathVersionRegex = vr.replace(REGEX_BEGIN_CHAR,
-                REGEX_BEGIN_CHAR + versionPathPrefix);
-        ApiVersioningConfiguration.superiorVersionRegex = vr.replace(REGEX_BEGIN_CHAR,
+        String noCaptureVr = noCaptureRegex;
+        if (!noCaptureVr.startsWith(REGEX_BEGIN_CHAR)) {
+            noCaptureVr = REGEX_BEGIN_CHAR + noCaptureVr;
+        }
+        if (!noCaptureVr.endsWith(REGEX_END_CHAR)) {
+            noCaptureVr += REGEX_END_CHAR;
+        }
+
+        confVersionRegex = vr.replace(REGEX_BEGIN_CHAR, REGEX_BEGIN_CHAR + ".?");
+        pathVersionRegex = noCaptureVr.replace(REGEX_BEGIN_CHAR, REGEX_BEGIN_CHAR + versionPathPrefix);
+        superiorVersionRegex = vr.replace(REGEX_BEGIN_CHAR,
                 REGEX_BEGIN_CHAR + REGEX_CHAR_LIST_OPEN + SUPERIOR_VERSION_PREFIXES + REGEX_CHAR_LIST_CLOSE);
-        ApiVersioningConfiguration.inferiorVersionRegex = vr.replace(REGEX_BEGIN_CHAR,
+        inferiorVersionRegex = vr.replace(REGEX_BEGIN_CHAR,
                 REGEX_BEGIN_CHAR + REGEX_CHAR_LIST_OPEN + INFERIOR_VERSION_PREFIXES + REGEX_CHAR_LIST_CLOSE);
-        ApiVersioningConfiguration.compatibleVersionRegex = vr.replace(REGEX_BEGIN_CHAR,
+        compatibleVersionRegex = vr.replace(REGEX_BEGIN_CHAR,
                 REGEX_BEGIN_CHAR + REGEX_CHAR_LIST_OPEN + COMPATIBLE_VERSION_PREFIXES + REGEX_CHAR_LIST_CLOSE);
-        ApiVersioningConfiguration.exactVersionRegex = vr.replace(REGEX_BEGIN_CHAR,
+        exactVersionRegex = vr.replace(REGEX_BEGIN_CHAR,
                 REGEX_BEGIN_CHAR + REGEX_CHAR_LIST_OPEN + EXACT_VERSION_PREFIXES + REGEX_CHAR_LIST_CLOSE + "?");
-        ApiVersioningConfiguration.excludeVersionRegex = vr.replace(REGEX_BEGIN_CHAR,
+        excludeVersionRegex = vr.replace(REGEX_BEGIN_CHAR,
                 REGEX_BEGIN_CHAR + REGEX_CHAR_LIST_OPEN + EXCLUDE_VERSION_PREFIXES + REGEX_CHAR_LIST_CLOSE);
 
-        ApiVersioningConfiguration.versionPattern = Pattern.compile(ApiVersioningConfiguration.getConfVersionRegex());
+        versionPattern = Pattern.compile(ApiVersioningConfiguration.getConfVersionRegex());
+        versionPathVariable = "{" + getPathVarname() + "}";
+        versionPathVariableWithRegex = "{" + getPathVarname() + ":" + getPathVersionRegex() + "}";
     }
 
     public static String getPathVarname() {
@@ -141,12 +154,12 @@ public class ApiVersioningConfiguration {
         return apiPath;
     }
 
-    public static String getVersionPathVariableEscaped() {
-        return getVersionPathVariable().replaceAll("\\{", "\\\\{").replaceAll("\\}", "\\\\}");
+    public static String getVersionPathVariable() {
+        return versionPathVariable;
     }
 
-    public static String getVersionPathVariable() {
-        return "{" + getPathVarname() + "}";
+    public static String getVersionPathVariableWithRegex() {
+        return versionPathVariableWithRegex;
     }
 
 }
