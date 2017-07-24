@@ -4,33 +4,39 @@ import java.util.Comparator;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.stereotype.Component;
 
 import net.chibidevteam.apiversioning.exceptions.NoSupportedVersionException;
 
 @PropertySource(value = { "classpath:/default-apiversioning.properties",
         "classpath:/" + ApiVersioningConfiguration.PROPERTY_FILE }, ignoreResourceNotFound = true)
-@Component
+@Configuration
+@ComponentScan({ "net.chibidevteam.apiversioning.config", "net.chibidevteam.apiversioning.controller" })
 public class ApiVersioningConfiguration {
 
-    public static final String              PROPERTY_FILE               = "apiversioning.properties";
+    public static final String              PROPERTY_FILE                    = "apiversioning.properties";
+    public static final String              DEFAULT_VERSION_REGEX            = "(\\d+)(?:\\.(\\d+))?(?:\\.(\\d+))?(.*)";
+    public static final String              DEFAULT_NO_CAPTURE_VERSION_REGEX = "(?:\\d+)(?:\\.(?:\\d+))?(?:\\.(?:\\d+))?(?:.*)";
 
-    public static final Comparator<Integer> INTEGER_COMPARATOR          = Comparator.nullsFirst(Integer::compareTo);
+    public static final Comparator<Integer> INTEGER_COMPARATOR               = Comparator
+            .nullsFirst(Integer::compareTo);
 
-    public static final int                 PRIME_NBR                   = 31;
+    public static final int                 PRIME_NBR                        = 31;
 
-    private static final String             REGEX_BEGIN_CHAR            = "^";
-    private static final String             REGEX_END_CHAR              = "$";
-    private static final String             REGEX_CHAR_LIST_OPEN        = "[";
-    private static final String             REGEX_CHAR_LIST_CLOSE       = "]";
+    public static final String              REGEX_BEGIN_CHAR                 = "^";
+    public static final String              REGEX_END_CHAR                   = "$";
+    public static final String              REGEX_CHAR_LIST_OPEN             = "[";
+    public static final String              REGEX_CHAR_LIST_CLOSE            = "]";
 
-    public static final String              SUPERIOR_VERSION_PREFIXES   = ">";
-    public static final String              INFERIOR_VERSION_PREFIXES   = "<";
-    public static final String              COMPATIBLE_VERSION_PREFIXES = "\\^";
-    public static final String              EXACT_VERSION_PREFIXES      = "v=";
-    public static final String              EXCLUDE_VERSION_PREFIXES    = "!";
+    public static final String              SUPERIOR_VERSION_PREFIXES        = ">";
+    public static final String              INFERIOR_VERSION_PREFIXES        = "<";
+    public static final String              COMPATIBLE_VERSION_PREFIXES      = "\\^";
+    public static final String              EXACT_VERSION_PREFIXES           = "v=";
+    public static final String              EXCLUDE_VERSION_PREFIXES         = "!";
 
     private static String                   versionPathPrefix;
 
@@ -52,6 +58,9 @@ public class ApiVersioningConfiguration {
     private static String                   versionPathVariable;
     private static String                   versionPathVariableWithRegex;
 
+    private String                          versionRegex;
+    private String                          noCaptureVersionRegex;
+
     public ApiVersioningConfiguration(@Value("${net.chibidevteam.apiversioning.path.prefix}") String versionPathPrefix,
             @Value("${net.chibidevteam.apiversioning.path.varname}") String pathVarname,
             @Value("${net.chibidevteam.apiversioning.versions.supported}") String[] supportedVersions,
@@ -59,6 +68,7 @@ public class ApiVersioningConfiguration {
             @Value("${net.chibidevteam.apiversioning.versions.noCaptureRegex}") String noCaptureRegex,
             @Value("${net.chibidevteam.apiversioning.path.base}") String basePath,
             @Value("${net.chibidevteam.apiversioning.path.api}") String apiPath) throws NoSupportedVersionException {
+
         ApiVersioningConfiguration.versionPathPrefix = versionPathPrefix;
         ApiVersioningConfiguration.pathVarname = pathVarname;
         ApiVersioningConfiguration.supportedVersions = supportedVersions;
@@ -69,14 +79,17 @@ public class ApiVersioningConfiguration {
             throw new NoSupportedVersionException();
         }
 
-        String vr = versionRegex;
+        String vr = StringUtils.isEmpty(versionRegex) ? DEFAULT_VERSION_REGEX : versionRegex;
+        this.versionRegex = vr;
         if (!vr.startsWith(REGEX_BEGIN_CHAR)) {
             vr = REGEX_BEGIN_CHAR + vr;
         }
         if (!vr.endsWith(REGEX_END_CHAR)) {
             vr += REGEX_END_CHAR;
         }
-        String noCaptureVr = noCaptureRegex;
+
+        String noCaptureVr = StringUtils.isEmpty(noCaptureRegex) ? DEFAULT_NO_CAPTURE_VERSION_REGEX : noCaptureRegex;
+        this.noCaptureVersionRegex = noCaptureVr;
         if (!noCaptureVr.startsWith(REGEX_BEGIN_CHAR)) {
             noCaptureVr = REGEX_BEGIN_CHAR + noCaptureVr;
         }
@@ -160,6 +173,14 @@ public class ApiVersioningConfiguration {
 
     public static String getVersionPathVariableWithRegex() {
         return versionPathVariableWithRegex;
+    }
+
+    public String getVersionRegex() {
+        return versionRegex;
+    }
+
+    public String getNoCaptureVersionRegex() {
+        return noCaptureVersionRegex;
     }
 
 }

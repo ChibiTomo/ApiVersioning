@@ -20,10 +20,12 @@ import net.chibidevteam.apiversioning.util.helper.VersionHelper;
 public class ApiVersionCondition {
 
     /** Logger that is available to subclasses */
-    protected final Log       logger            = LogFactory.getLog(getClass());
+    protected final Log       logger             = LogFactory.getLog(getClass());
 
-    private SortedSet<String> versions          = new TreeSet<>();
-    private SortedSet<String> supportedVersions = new TreeSet<>();
+    private SortedSet<String> versions           = new TreeSet<>();
+    private SortedSet<String> supportedVersions  = new TreeSet<>();
+
+    private boolean           hasVersionsPattern = false;
 
     public ApiVersionCondition(String[] versions, String[] supportedVersions) {
         this(new TreeSet<String>(Arrays.asList(versions)), new TreeSet<String>(Arrays.asList(supportedVersions)));
@@ -31,13 +33,14 @@ public class ApiVersionCondition {
 
     public ApiVersionCondition(SortedSet<String> versions, SortedSet<String> supportedVersions) {
         SortedSet<String> newVersions = VersionHelper.getRealVersions(versions, supportedVersions);
+        this.hasVersionsPattern = versions != null && !versions.isEmpty();
         this.versions.addAll(newVersions);
         this.supportedVersions.addAll(supportedVersions);
     }
 
     public boolean doSupportLast() {
-        return !versions.isEmpty() && !supportedVersions.isEmpty()
-                && VersionHelper.match(versions.last(), supportedVersions.last(), false);
+        return !supportedVersions.isEmpty() && (!hasVersionsPattern
+                || !versions.isEmpty() && VersionHelper.match(versions.last(), supportedVersions.last(), false));
     }
 
     public ApiVersionCondition restrictWith(ApiVersionCondition other) {

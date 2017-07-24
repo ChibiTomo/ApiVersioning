@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import net.chibidevteam.apiversioning.config.ApiVersioningConfiguration;
 import net.chibidevteam.apiversioning.util.ApiVersionCondition;
@@ -64,6 +65,23 @@ public class ApiPathHelper {
         return set.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
     }
 
+    public static String translatePath(String path, String version, boolean useApiPath) {
+        StringBuilder sb = new StringBuilder();
+        if (useApiPath) {
+            sb.append(getApiPath(true));
+        }
+        sb.append(prependSlash(path));
+
+        if (StringUtils.isEmpty(version)) {
+            return removeVersionPathVariable(sb.toString());
+        }
+        String v = version;
+        if (!v.startsWith(ApiVersioningConfiguration.getVersionPathPrefix())) {
+            v = ApiVersioningConfiguration.getVersionPathPrefix() + v;
+        }
+        return replaceVersionPathVariable(sb.toString(), v);
+    }
+
     private static String removeVersionPathVariable(String path) {
         return replaceVersionPathVariable(path, "");
     }
@@ -71,9 +89,9 @@ public class ApiPathHelper {
     private static String replaceVersionPathVariable(String path, String rplc) {
         String needle = ApiVersioningConfiguration.getVersionPathVariable();
         String needle2 = ApiVersioningConfiguration.getVersionPathVariableWithRegex();
-        String v = path.replaceAll(Pattern.quote(needle), Matcher.quoteReplacement(rplc))
+        String p = path.replaceAll(Pattern.quote(needle), Matcher.quoteReplacement(rplc))
                 .replaceAll(Pattern.quote(needle2), Matcher.quoteReplacement(rplc));
-        return removeDuplicatedSlash(v);
+        return removeDuplicatedSlash(p);
     }
 
     private static String removeDuplicatedSlash(String path) {
