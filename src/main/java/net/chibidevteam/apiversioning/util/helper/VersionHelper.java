@@ -10,13 +10,11 @@ import java.util.regex.Matcher;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import net.chibidevteam.apiversioning.config.ApiVersioningConfiguration;
 import net.chibidevteam.apiversioning.pojo.Version;
 
-@Service
 public final class VersionHelper {
 
     private static final Log LOGGER = LogFactory.getLog(VersionHelper.class);

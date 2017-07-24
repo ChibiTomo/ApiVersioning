@@ -21,6 +21,6 @@ public class ApiVersionFallbackController {
     @ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "This endpoint is not implemented for the given version")
     public void pathFallback(@ValidApiVersion @PathVariable(apiPathVarname) String apiVersion) {
         // It only makes difference between not supported versions and non implemented endpoints.
-        // It always leads to a HTTP error
+        // It always leads to a HTTP error.
     }
 }
