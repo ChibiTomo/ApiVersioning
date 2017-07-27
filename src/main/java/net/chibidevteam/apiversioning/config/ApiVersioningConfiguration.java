@@ -6,7 +6,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
@@ -15,7 +14,6 @@ import net.chibidevteam.apiversioning.exceptions.NoSupportedVersionException;
 @PropertySource(value = { "classpath:/default-apiversioning.properties",
         "classpath:/" + ApiVersioningConfiguration.PROPERTY_FILE }, ignoreResourceNotFound = true)
 @Configuration
-@ComponentScan({ "net.chibidevteam.apiversioning.config", "net.chibidevteam.apiversioning.controller" })
 public class ApiVersioningConfiguration {
 
     public static final String              PROPERTY_FILE                    = "apiversioning.properties";

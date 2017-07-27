@@ -6,6 +6,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.validation.ConstraintViolationException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Assert;
@@ -16,6 +18,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.util.NestedServletException;
 
 import net.chibidevteam.apiversioning.util.Utils;
 import net.chibidevteam.apiversioning.util.helper.ApiPathHelper;
@@ -39,6 +42,14 @@ public abstract class AbstractControllerTest {
         mockMvc = MockMvcBuilders //
                 .webAppContextSetup(context) //
                 .build();
+    }
+
+    protected void expectApi(String path, String version, boolean shouldThrow) throws Exception {
+        try {
+            expectApi(path, version, -1, "");
+        } catch (NestedServletException e) {
+            Assert.assertTrue(e.getCause() instanceof ConstraintViolationException);
+        }
     }
 
     protected void expectApi(String path, int status, String body) throws Exception {
