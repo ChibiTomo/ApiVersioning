@@ -1,7 +1,12 @@
 ApiVersioning
 =============
+|Branch |        Build                                                                                                         |        Version                                                                        |
+|:------|:--------------------------------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------:|
+|Master |[![CircleCI master](https://img.shields.io/circleci/project/github/ChibiTomo/ApiVersioning/master.svg?style=flat)]()  |[![Release master](https://img.shields.io/github/release/ApiVersioning/master.svg)]()  |
+|Develop|[![CircleCI develop](https://img.shields.io/circleci/project/github/ChibiTomo/ApiVersioning/develop.svg?style=flat)]()|[![Release develop](https://img.shields.io/github/release/ApiVersioning/develop.svg)]()|
 
 This library allows you to make your web API versionable (very usefull with REST).
+
 You will be able to do versions through:
 - **Path**: OK
 - **Header**: [To be done](https://github.com/ChibiTomo/ApiVersioning/issues/1)
@@ -112,8 +117,9 @@ This will create the following endpoints:
 - `exampleV3` will be mapped to `/api/v3/example`
 - `getTest` will be mapped to `/api/example/test`, `/api/v1.7/example/test`, `/api/v1.8/example/test`, `/api/v2.5/example/test`, `/api/v3/example/test` and `/api/v3.5/example/test`
 
-Any request that match `/api/v0/**`, as any non mapped endpoint, will leads to a 404 HTTP error.
-Any request that match `/api/{apiVersion}/**` with unsupported version, will leads to a 400 HTTP error.
+- Any request that match `/api/v0/**`, as any non mapped endpoint, will leads to a 404 HTTP error.
+- Any request that match `/api/{apiVersion}/**` with unsupported version, will leads to a `ConstraintViolationException`. 
+If not handled, this will leads to a 500 HTTP error.
 
 Configurations
 --------------

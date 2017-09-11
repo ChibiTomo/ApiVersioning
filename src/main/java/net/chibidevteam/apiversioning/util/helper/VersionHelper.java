@@ -26,21 +26,21 @@ public final class VersionHelper {
      * Test if a version match an array of version representations. The version {@code toTest} should match at least one
      * version representation from the {@code versions}.
      * <ul>
-     * <li>1.7 match {^1.5, >2}</li>
-     * <li>1.7 match {<1.5, >1.7}</li>
-     * <li>1.7 match {!1.5, >1}</li>
-     * <li>1.7 does not match {<1.5, ^1}</li>
+     * <li>1.7 match {^1.5, &gt;&gt;2}</li>
+     * <li>1.7 match {&lt;1.5, &gt;1.7}</li>
+     * <li>1.7 match {!1.5, &gt;1}</li>
+     * <li>1.7 does not match {&lt;1.5, ^1}</li>
      * <li>1.7 does not match {^1.5, !1.7}</li>
      * </ul>
-     * 
+     *
      * @param toTest
      *            the version to test. <b>Should not be a compatibility representation.</b>
      * @param versions
      *            the reference version array.
      * @param isTestFromPath
      *            set it to true if the tested version is from the path.
-     * @return {@literal true} if {@code toTest} match at least one version representation from {@code versions}.</br>
-     *         {@literal false} if {@code toTest} does not match at least one exclude version from {@code versions}.</br>
+     * @return {@literal true} if {@code toTest} match at least one version representation from {@code versions}.
+     *         {@literal false} if {@code toTest} does not match at least one exclude version from {@code versions}.
      *         {@literal false} otherwise.
      * @throws
      *             NullPointerException
@@ -61,20 +61,20 @@ public final class VersionHelper {
     /**
      * Test if two version representation match together
      * <ul>
-     * <li>1.7 match >1.5</li>
+     * <li>1.7 match &gt;1.5</li>
      * <li>1.7 match ^1.5</li>
      * <li>1.7 match !1.5</li>
-     * <li>1.7 does not match <1.5</li>
+     * <li>1.7 does not match &lt;1.5</li>
      * <li>1.7 does not match 1.5</li>
      * </ul>
-     * 
+     *
      * @param toTest
      *            the version to test. <b>Should not be a compatibility representation.</b>
      * @param version
      *            the reference version.
      * @param isTestFromPath
      *            set it to true if the tested version is from the path.
-     * @return {@literal true} if {@code toTest} match the version representation from {@code version}.</br>
+     * @return {@literal true} if {@code toTest} match the version representation from {@code version}.
      *         {@literal false} otherwise.
      */
     public static boolean match(String toTest, String version, boolean isTestFromPath) {
@@ -120,9 +120,11 @@ public final class VersionHelper {
     /**
      * Test if the passed string match the {@link ApiVersioningConfiguration}::getConfVersionRegex
      * or {@link ApiVersioningConfiguration}::getPathVersionRegex
-     * 
+     *
      * @param toTest
-     * @return
+     *            The string to test
+     * @return {@literal true} if toTest match {@link ApiVersioningConfiguration}::getConfVersionRegex
+     *         or {@link ApiVersioningConfiguration}::getPathVersionRegex
      */
     public static boolean isVersion(String toTest) {
         LOGGER.trace("Testing '" + toTest + "' with '" + ApiVersioningConfiguration.getConfVersionRegex() + "' and '"

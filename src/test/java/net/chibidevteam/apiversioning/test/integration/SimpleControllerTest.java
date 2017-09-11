@@ -6,14 +6,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.web.util.NestedServletException;
 
-import net.chibidevteam.apiversioning.config.ApiVersioningConfiguration;
-import net.chibidevteam.apiversioning.config.WebMvcConfigSupport;
+import net.chibidevteam.apiversioning.config.TestConfig;
 import net.chibidevteam.apiversioning.controller.FirstController;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { ApiVersioningConfiguration.class, WebMvcConfigSupport.class })
+@ContextConfiguration(classes = TestConfig.class)
 @WebAppConfiguration
 public class SimpleControllerTest extends AbstractControllerTest {
     // Version supported: 0,1.7,1.8,2.5,3,4.0
@@ -25,9 +23,9 @@ public class SimpleControllerTest extends AbstractControllerTest {
     }
 
     // Exception to handle is ConstraintViolationException
-    @Test(expected = NestedServletException.class)
+    @Test
     public void fallback500() throws Exception {
-        expectApi(FirstController.BASE_PATH, "12", HttpStatus.INTERNAL_SERVER_ERROR.value(), "");
+        expectApi(FirstController.BASE_PATH, "12", true);
     }
 
     @Test
