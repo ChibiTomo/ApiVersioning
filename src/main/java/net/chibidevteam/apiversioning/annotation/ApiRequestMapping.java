@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
- * This annotation act as a placeholder for {@link org.springframework.web.bind.annotation.RequestMapping}.</br>
+ * This annotation act as a placeholder for RequestMapping.
  * It allows to completely omit the base path for your API, as it will be added before the mapping.
- * 
+ *
  * @author Yannis THOMIAS
  */
 @Target({ ElementType.METHOD, ElementType.TYPE })
