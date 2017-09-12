@@ -10,7 +10,7 @@
 
 	<groupId>net.chibidevteam</groupId>
 	<artifactId>apiversioning</artifactId>
-	<version>0.1.0-SNAPSHOT</version>
+	<version>0.1.0</version>
 
 	<name>ApiVersioning</name>
 	<description>Makes Spring REST WebServices versionable</description>
@@ -35,7 +35,8 @@
 		<connection>scm:git:https://github.com/ChibiTomo/ApiVersioning.git</connection>
 		<developerConnection>scm:git:https://github.com/ChibiTomo/ApiVersioning.git</developerConnection>
 		<url>https://github.com/ChibiTomo/ApiVersioning/tree/master</url>
-	</scm>
+	  <tag>0.1.0</tag>
+  </scm>
 
 	<properties>
 		<spring.version>4.3.9.RELEASE</spring.version>
