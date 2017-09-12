@@ -32,8 +32,8 @@
 	</licenses>
 
 	<scm>
-		<connection>scm:git:git://github.com:ChibiTomo/ApiVersioning.git</connection>
-		<developerConnection>scm:git:git://github.com:ChibiTomo/ApiVersioning.git</developerConnection>
+		<connection>scm:git:https://github.com/ChibiTomo/ApiVersioning.git</connection>
+		<developerConnection>scm:git:https://github.com/ChibiTomo/ApiVersioning.git</developerConnection>
 		<url>https://github.com/ChibiTomo/ApiVersioning/tree/master</url>
 	</scm>
 
