@@ -1,9 +1,6 @@
 ApiVersioning
 =============
-|Branch |        Build                                                                                                         |        Version                                                                        |
-|:------|:--------------------------------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------:|
-|Master |[![CircleCI master](https://img.shields.io/circleci/project/github/ChibiTomo/ApiVersioning/master.svg?style=flat)]()  |[![Release master](https://img.shields.io/github/release/ApiVersioning/master.svg)]()  |
-|Develop|[![CircleCI develop](https://img.shields.io/circleci/project/github/ChibiTomo/ApiVersioning/develop.svg?style=flat)]()|[![Release develop](https://img.shields.io/github/release/ApiVersioning/develop.svg)]()|
+[![CircleCI master](https://img.shields.io/circleci/project/github/ChibiTomo/ApiVersioning/master.svg?style=flat)](https://circleci.com/gh/ChibiTomo/ApiVersioning/tree/master) [![Release master](https://img.shields.io/maven-central/v/net.chibidevteam/apiversioning.svg)]()
 
 This library allows you to make your web API versionable (very usefull with REST).
 
